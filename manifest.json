@@ -1,0 +1,17 @@
+{
+  "name": "Sri Radhe Krishna Roadlines Invoice",
+  "short_name": "SRKR Invoice",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f2f6f3",
+  "theme_color": "#17483f",
+  "icons": [
+    {
+      "src": "assets/image2.png",
+      "sizes": "131x100",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
