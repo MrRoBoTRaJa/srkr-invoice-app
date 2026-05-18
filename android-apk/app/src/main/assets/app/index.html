@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#17483f">
+    <title>Sri Radhe Krishna Roadlines Invoice</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css?v=9">
+  </head>
+  <body>
+    <header class="app-header">
+      <img class="brand-mark" src="assets/image2.png" alt="Sri Radhe Krishna Roadlines">
+      <div>
+        <p class="eyebrow">Offline Invoice PWA</p>
+        <h1>Sri Radhe Krishna Roadlines</h1>
+        <p>Cart Sarai Road, Gadikhana Chowk, Near Vir Kuwar Singh Park, Ranchi 834001</p>
+      </div>
+    </header>
+
+    <main class="app-shell">
+      <section class="panel form-panel" aria-labelledby="entry-title">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Invoice Entry</p>
+            <h2 id="entry-title">Create or edit bill</h2>
+          </div>
+          <output id="statusBadge" class="status-badge">Offline ready</output>
+        </div>
+
+        <form id="invoiceForm" autocomplete="off">
+          <div class="form-grid">
+            <label>
+              <span>Invoice No.</span>
+              <input id="slNo" name="slNo" type="number" inputmode="numeric" readonly>
+            </label>
+            <label>
+              <span>Invoice Date</span>
+              <input id="invoiceDate" name="invoiceDate" type="date" required>
+            </label>
+            <label class="wide">
+              <span>Description</span>
+              <select id="description" name="description" required>
+                <option value="Vehicle hire charges">Vehicle hire charges</option>
+                <option value="Transportation charges">Transportation charges</option>
+                <option value="Loading and unloading charges">Loading and unloading charges</option>
+                <option value="Other service charges">Other service charges</option>
+              </select>
+            </label>
+            <label>
+              <span>Month From</span>
+              <input id="monthFrom" name="monthFrom" type="date" required>
+            </label>
+            <label>
+              <span>Month To</span>
+              <input id="monthTo" name="monthTo" type="date" required>
+            </label>
+            <label class="wide">
+              <span>Amount</span>
+              <input id="amount" name="amount" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" required>
+            </label>
+          </div>
+
+          <div class="words-box">
+            <span>In words</span>
+            <strong id="amountWords">ZERO RUPEES ONLY</strong>
+          </div>
+
+          <div class="actions">
+            <button class="primary" type="submit">Save Invoice</button>
+            <button type="button" id="newInvoiceBtn">New</button>
+            <button type="button" id="viewInvoiceBtn">View Invoice</button>
+            <button type="button" id="downloadPdfBtn">Download PDF</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel tools-panel" aria-labelledby="tools-title">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Find & Backup</p>
+            <h2 id="tools-title">Local records</h2>
+          </div>
+          <strong id="invoiceCount">0 bills</strong>
+        </div>
+
+        <div class="search-row">
+          <label>
+            <span>Search/Edit by Invoice No.</span>
+            <input id="searchSlNo" type="number" inputmode="numeric" placeholder="Enter Invoice No.">
+          </label>
+          <button type="button" id="searchBtn">Search</button>
+        </div>
+
+        <div class="backup-row">
+          <button type="button" id="exportBtn">Export JSON</button>
+          <label class="file-button">
+            <input id="importFile" type="file" accept="application/json,.json">
+            Import JSON
+          </label>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Invoice No.</th>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Amount</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="invoiceRows"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <dialog id="invoiceDialog" class="invoice-dialog">
+      <div class="preview-toolbar">
+        <h2 id="preview-title">Invoice Page</h2>
+        <div class="dialog-actions">
+          <button type="button" id="dialogPdfBtn">Download PDF</button>
+          <button type="button" id="closeInvoiceBtn">Close</button>
+        </div>
+      </div>
+      <article id="invoicePreview" class="invoice-paper"></article>
+    </dialog>
+
+    <template id="invoiceTemplate">
+      <div class="invoice-contact">Mob: 9939269234,<br>6207178839</div>
+      <img class="invoice-logo" src="assets/image2.png" alt="">
+      <h3>SRI RADHE KRISHNA ROADLINES</h3>
+      <p>CART SARAI ROAD, GADIKHANA CHOWK, NEAR VIR KUWAR SINGH PARK, RANCHI 834001</p>
+      <p>EMAIL: radhekrishnaroadlines9792@gmail.com</p>
+      <h4>INVOICE BILL</h4>
+      <table class="invoice-table">
+        <colgroup>
+          <col class="sl-col">
+          <col class="description-col">
+          <col class="month-col">
+          <col class="amount-col">
+        </colgroup>
+        <thead>
+          <tr class="party-row">
+            <th colspan="2">
+              <strong>TO, TVS SUPPLY CHAIN<br>SOLUTIONS LTD RANCHI<br>JHARKHAND</strong>
+              <span>GSTIN: 20AACCT1412E1Z9</span>
+            </th>
+            <th colspan="2">
+              <strong>INVOICE NO.:<b data-field="slNo"></b></strong>
+              <strong>INVOICE DATE <b data-field="invoiceDate"></b></strong>
+            </th>
+          </tr>
+          <tr>
+            <th>INVOICE NO.</th>
+            <th>DESCRIPTION</th>
+            <th>MONTH OF BILL</th>
+            <th>AMOUNT</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="bill-row">
+            <td data-field="displaySl"></td>
+            <td data-field="description"></td>
+            <td data-field="monthBill"></td>
+            <td data-field="amount"></td>
+          </tr>
+          <tr class="blank-row">
+            <td colspan="4"></td>
+          </tr>
+          <tr class="net-row">
+            <td colspan="2">Net Amount</td>
+            <td colspan="2" data-field="amount"></td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="words-line">AMOUNT IN WORDS: <b data-field="amountWords"></b>.</p>
+      <p class="note">NOTE: THE Hiring Of vehicles by A GOODS TRANSPORT AGENCY (GTA) IS EXEMPT UNDER GST as per entry no. 22 of Notification NO. 12/2017- CENTRAL TAX (RATE) DATED JUNE 28,2017.</p>
+      <div class="sign-block">
+        <img src="assets/image1.png" alt="">
+        <strong>SRI RADHE KRISHNA ROADLINES</strong>
+        <span>AUTHORIZED SIGNATORY</span>
+      </div>
+    </template>
+
+    <script src="app.js?v=8" defer></script>
+  </body>
+</html>
