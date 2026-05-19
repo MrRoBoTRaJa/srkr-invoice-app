@@ -165,8 +165,10 @@ async function refreshInvoices() {
 
 async function prepareNewInvoice() {
   editingSlNo = null;
-  els.form.reset();
-  setToday();
+  els.invoiceDate.value = "";
+  els.monthFrom.value = "";
+  els.monthTo.value = "";
+  els.amount.value = "";
   els.slNo.value = nextSlNo();
   els.description.value = "Vehicle hire charges";
   syncWordsAndPreview();
@@ -188,7 +190,7 @@ async function saveCurrentInvoice(event) {
   await putInvoice(invoice);
   editingSlNo = invoice.slNo;
   await refreshInvoices();
-  renderPreview(invoice);
+  await prepareNewInvoice();
   flash(`Saved invoice ${invoice.slNo}`);
 }
 
