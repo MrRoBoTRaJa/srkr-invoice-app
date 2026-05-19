@@ -6,6 +6,10 @@ android {
     namespace "com.srkr.invoice"
     compileSdk 35
 
+    buildFeatures {
+        buildConfig true
+    }
+
     defaultConfig {
         applicationId "com.srkr.invoice"
         minSdk 23

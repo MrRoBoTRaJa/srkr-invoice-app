@@ -32,6 +32,7 @@ const els = {
   searchSlNo: document.querySelector("#searchSlNo"),
   searchBtn: document.querySelector("#searchBtn"),
   newBtn: document.querySelector("#newInvoiceBtn"),
+  updateBtn: document.querySelector("#updateBtn"),
   historyBtn: document.querySelector("#historyBtn"),
   closeHistoryBtn: document.querySelector("#closeHistoryBtn"),
   historyDialog: document.querySelector("#historyDialog"),
@@ -64,6 +65,7 @@ async function init() {
   checkTrial();
   registerServiceWorker();
   updateOnlineStatus();
+  window.setTimeout(() => checkForAppUpdate(false), 1800);
 }
 
 function openDb() {
@@ -131,6 +133,7 @@ function bindEvents() {
     document.querySelector(`#${id}`).addEventListener("input", () => renderPreview(currentFormInvoice()));
   });
   els.newBtn.addEventListener("click", prepareNewInvoice);
+  els.updateBtn.addEventListener("click", () => checkForAppUpdate(true));
   els.historyBtn.addEventListener("click", openHistoryView);
   els.closeHistoryBtn.addEventListener("click", () => els.historyDialog.close());
   els.historyDialog.addEventListener("click", (event) => {
@@ -596,6 +599,16 @@ function setTrialDisabled(disabled) {
   ].forEach((button) => {
     if (button) button.disabled = disabled;
   });
+}
+
+function checkForAppUpdate(userRequested) {
+  if (window.AndroidUpdater && typeof window.AndroidUpdater.checkUpdate === "function") {
+    window.AndroidUpdater.checkUpdate(Boolean(userRequested));
+    return;
+  }
+  if (userRequested) {
+    window.open("https://github.com/MrRoBoTRaJa/srkr-invoice-app/releases/latest", "_blank");
+  }
 }
 
 function buildInvoicePdf(invoice) {

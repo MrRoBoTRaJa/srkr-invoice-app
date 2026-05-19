@@ -76,11 +76,17 @@ select:focus-visible,
   flex: 1 1 auto;
 }
 
-.header-history {
+.header-history,
+.header-update {
   flex: 0 0 auto;
   min-height: 38px;
   padding: 0 12px;
   white-space: nowrap;
+}
+
+.header-update {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .brand-mark {
@@ -545,10 +551,11 @@ td:last-child {
     font-size: 0.56rem;
   }
 
-  .header-history {
+  .header-history,
+  .header-update {
     min-height: 32px;
-    padding: 0 8px;
-    font-size: 0.72rem;
+    padding: 0 7px;
+    font-size: 0.68rem;
   }
 
   .app-shell {
