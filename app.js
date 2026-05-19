@@ -52,6 +52,7 @@ let invoices = [];
 let editingSlNo = null;
 let trialExpired = false;
 let trialDaysLeft = TRIAL_DAYS;
+let pdfLogoHexCache = null;
 
 document.addEventListener("DOMContentLoaded", init);
 
@@ -65,6 +66,7 @@ async function init() {
   checkTrial();
   registerServiceWorker();
   updateOnlineStatus();
+  setupUpdateUi();
   window.setTimeout(() => checkForAppUpdate(false), 1800);
 }
 
@@ -156,6 +158,18 @@ function bindEvents() {
   window.addEventListener("offline", updateOnlineStatus);
 }
 
+function setupUpdateUi() {
+  window.showUpdateButton = () => {
+    els.updateBtn.hidden = false;
+  };
+  window.hideUpdateButton = () => {
+    els.updateBtn.hidden = true;
+  };
+  if (window.AndroidUpdater) {
+    els.updateBtn.hidden = true;
+  }
+}
+
 function setToday() {
   const today = new Date().toISOString().slice(0, 10);
   els.invoiceDate.value = today;
@@ -168,7 +182,7 @@ async function refreshInvoices() {
 
 async function prepareNewInvoice() {
   editingSlNo = null;
-  els.invoiceDate.value = "";
+  setToday();
   els.monthFrom.value = "";
   els.monthTo.value = "";
   els.amount.value = "";
@@ -554,15 +568,34 @@ function registerServiceWorker() {
   }
 }
 
-function downloadInvoicePdf(invoice) {
+async function downloadInvoicePdf(invoice) {
   if (blockWhenTrialExpired()) return;
   if (!validateInvoice(invoice)) return;
   const clean = {
     ...invoice,
     amountWords: amountToIndianWords(invoice.amount || 0)
   };
-  const blob = buildInvoicePdf(clean);
-  downloadBlob(blob, `invoice-${clean.slNo || "draft"}.pdf`);
+  const blob = buildInvoicePdf(clean, await getPdfLogoHex());
+  downloadBlob(blob, invoicePdfFilename(clean));
+}
+
+async function getPdfLogoHex() {
+  if (pdfLogoHexCache !== null) return pdfLogoHexCache;
+  try {
+    const response = await fetch("assets/logo-pdf.jpg");
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    pdfLogoHexCache = Array.from(bytes)
+      .map((byte) => byte.toString(16).padStart(2, "0").toUpperCase())
+      .join("");
+  } catch (error) {
+    pdfLogoHexCache = "";
+  }
+  return pdfLogoHexCache;
+}
+
+function invoicePdfFilename(invoice) {
+  const invoiceDate = formatDateShort(invoice.invoiceDate).replace(/\./g, "-") || "date";
+  return `invoice_${invoice.slNo || "draft"}_${invoiceDate}.pdf`;
 }
 
 function checkTrial() {
@@ -611,7 +644,7 @@ function checkForAppUpdate(userRequested) {
   }
 }
 
-function buildInvoicePdf(invoice) {
+function buildInvoicePdf(invoice, logoHex = "") {
   const content = [];
   const width = 595.28;
   const height = 841.89;
@@ -654,30 +687,34 @@ function buildInvoicePdf(invoice) {
   content.push(black);
   text("Mob: 9939269234,", 548, 804, 10, { bold: true, align: "right" });
   text("6207178839", 548, 790, 10, { bold: true, align: "right" });
-  text(COMPANY.name, width / 2, 768, 18, { bold: true, align: "center" });
-  text(COMPANY.address, width / 2, 750, 9, { align: "center" });
-  text(COMPANY.email, width / 2, 736, 9, { align: "center" });
-  text("INVOICE BILL", width / 2, 690, 13, { bold: true, align: "center" });
-  line(255, 686, 340, 686);
+  if (logoHex) {
+    content.push("q 52 0 0 39.69 271.64 769 cm /Im1 Do Q");
+  }
+  text(COMPANY.name, width / 2, 752, 18, { bold: true, align: "center" });
+  text(COMPANY.address, width / 2, 734, 9, { align: "center" });
+  text(COMPANY.email, width / 2, 720, 9, { align: "center" });
+  text("INVOICE BILL", width / 2, 674, 13, { bold: true, align: "center" });
+  line(255, 670, 340, 670);
 
   const tableX = 70;
-  const tableTop = 654;
+  const tableTop = 638;
   const col = [58, 188, 128, 132];
   const rowH = [80, 40, 104, 22, 22];
   const tableW = col.reduce((sum, value) => sum + value, 0);
   const tableH = rowH.reduce((sum, value) => sum + value, 0);
   rect(tableX, tableTop - tableH, tableW, tableH);
-  let cx = tableX;
-  col.slice(0, -1).forEach((w) => {
-    cx += w;
-    line(cx, tableTop, cx, tableTop - tableH);
+  const boundary1 = tableX + col[0];
+  const boundary2 = tableX + col[0] + col[1];
+  const boundary3 = tableX + col[0] + col[1] + col[2];
+  line(boundary2, tableTop, boundary2, tableTop - rowH[0]);
+  [boundary1, boundary2, boundary3].forEach((x) => {
+    line(x, tableTop - rowH[0], x, tableTop - tableH);
   });
   let cy = tableTop;
   rowH.slice(0, -1).forEach((h) => {
     cy -= h;
     line(tableX, cy, tableX + tableW, cy);
   });
-  line(tableX + col[0] + col[1], tableTop, tableX + col[0] + col[1], tableTop - rowH[0]);
 
   text("TO, TVS SUPPLY CHAIN", tableX + 123, tableTop - 18, 11, { bold: true, align: "center" });
   text("SOLUTIONS LTD RANCHI", tableX + 123, tableTop - 34, 11, { bold: true, align: "center" });
@@ -713,18 +750,24 @@ function buildInvoicePdf(invoice) {
   text("AUTHORIZED SIGNATORY", 378, 106, 10, { bold: true });
 
   const stream = content.join("\n");
-  return makePdf(stream, width, height);
+  return makePdf(stream, width, height, logoHex);
 }
 
-function makePdf(contentStream, width, height) {
+function makePdf(contentStream, width, height, logoHex = "") {
+  const resources = logoHex
+    ? "/Resources << /Font << /F1 4 0 R /F2 5 0 R >> /XObject << /Im1 7 0 R >> >>"
+    : "/Resources << /Font << /F1 4 0 R /F2 5 0 R >> >>";
   const objects = [
     "<< /Type /Catalog /Pages 2 0 R >>",
     "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-    `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${width} ${height}] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>`,
+    `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${width} ${height}] ${resources} /Contents 6 0 R >>`,
     "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
     "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>",
     `<< /Length ${contentStream.length} >>\nstream\n${contentStream}\nendstream`
   ];
+  if (logoHex) {
+    objects.push(`<< /Type /XObject /Subtype /Image /Width 131 /Height 100 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter [/ASCIIHexDecode /DCTDecode] /Length ${logoHex.length + 1} >>\nstream\n${logoHex}>\nendstream`);
+  }
   let pdf = "%PDF-1.4\n";
   const offsets = [0];
   objects.forEach((obj, index) => {

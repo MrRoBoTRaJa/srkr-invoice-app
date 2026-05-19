@@ -1,6 +1,6 @@
 {
-  "versionCode": 1,
-  "versionName": "1.0",
+  "versionCode": 2,
+  "versionName": "1.1",
   "apkUrl": "https://raw.githubusercontent.com/MrRoBoTRaJa/srkr-invoice-app/main/SRKR-Invoice-debug.apk",
-  "notes": "Initial APK build"
+  "notes": "PDF logo, filename, validation, and auto updater fixes"
 }

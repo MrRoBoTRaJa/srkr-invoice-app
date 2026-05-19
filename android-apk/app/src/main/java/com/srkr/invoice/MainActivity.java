@@ -123,6 +123,11 @@ public class MainActivity extends Activity {
                             "App is already up to date",
                             Toast.LENGTH_LONG
                     ).show());
+                } else {
+                    runOnUiThread(() -> webView.evaluateJavascript(
+                            "window.hideUpdateButton && window.hideUpdateButton()",
+                            null
+                    ));
                 }
             } catch (Exception error) {
                 if (userRequested) {
@@ -137,6 +142,7 @@ public class MainActivity extends Activity {
     }
 
     private void showUpdateDialog(String versionName, String notes, String apkUrl) {
+        webView.evaluateJavascript("window.showUpdateButton && window.showUpdateButton()", null);
         String message = "New version available";
         if (!versionName.isEmpty()) {
             message += ": " + versionName;
