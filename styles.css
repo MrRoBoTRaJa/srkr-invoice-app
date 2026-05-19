@@ -66,9 +66,21 @@ select:focus-visible,
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 12px min(5vw, 36px);
+  padding: calc(24px + env(safe-area-inset-top, 0px)) min(5vw, 36px) 12px;
   background: var(--paper);
   border-bottom: 1px solid var(--line);
+}
+
+.app-header > div {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.header-history {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 0 12px;
+  white-space: nowrap;
 }
 
 .brand-mark {
@@ -511,7 +523,7 @@ td:last-child {
   .app-header {
     align-items: center;
     gap: 8px;
-    padding: 7px 10px;
+    padding: calc(26px + env(safe-area-inset-top, 0px)) 10px 8px;
   }
 
   .brand-mark {
@@ -520,7 +532,7 @@ td:last-child {
   }
 
   .app-header h1 {
-    font-size: 1rem;
+    font-size: 0.92rem;
   }
 
   .app-header p {
@@ -530,6 +542,12 @@ td:last-child {
 
   .app-header .eyebrow {
     font-size: 0.56rem;
+  }
+
+  .header-history {
+    min-height: 32px;
+    padding: 0 8px;
+    font-size: 0.72rem;
   }
 
   .app-shell {
