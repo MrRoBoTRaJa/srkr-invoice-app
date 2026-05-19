@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#17483f">
     <title>Sri Radhe Krishna Roadlines Invoice</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="styles.css?v=9">
+    <link rel="stylesheet" href="styles.css?v=11">
   </head>
   <body>
     <header class="app-header">
@@ -69,21 +69,27 @@
           <div class="actions">
             <button class="primary" type="submit">Save Invoice</button>
             <button type="button" id="newInvoiceBtn">New</button>
+            <button type="button" id="historyBtn">Bill History</button>
             <button type="button" id="viewInvoiceBtn">View Invoice</button>
             <button type="button" id="downloadPdfBtn">Download PDF</button>
           </div>
         </form>
       </section>
+    </main>
 
-      <section class="panel tools-panel" aria-labelledby="tools-title">
-        <div class="section-title">
-          <div>
-            <p class="eyebrow">Find & Backup</p>
-            <h2 id="tools-title">Local records</h2>
-          </div>
-          <strong id="invoiceCount">0 bills</strong>
+    <dialog id="historyDialog" class="history-dialog">
+      <div class="preview-toolbar">
+        <div>
+          <p class="eyebrow">Bill History</p>
+          <h2 id="tools-title">Local records</h2>
         </div>
+        <div class="dialog-actions">
+          <strong id="invoiceCount">0 bills</strong>
+          <button type="button" id="closeHistoryBtn">Close</button>
+        </div>
+      </div>
 
+      <section class="history-body" aria-labelledby="tools-title">
         <div class="search-row">
           <label>
             <span>Search/Edit by Invoice No.</span>
@@ -115,7 +121,7 @@
           </table>
         </div>
       </section>
-    </main>
+    </dialog>
 
     <dialog id="invoiceDialog" class="invoice-dialog">
       <div class="preview-toolbar">
@@ -185,6 +191,6 @@
       </div>
     </template>
 
-    <script src="app.js?v=8" defer></script>
+    <script src="app.js?v=11" defer></script>
   </body>
 </html>

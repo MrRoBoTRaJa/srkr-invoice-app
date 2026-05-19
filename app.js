@@ -4,6 +4,8 @@ const DB_NAME = "srkr-invoices-db";
 const DB_VERSION = 1;
 const STORE = "invoices";
 const DELETE_PASSWORD = "1234";
+const TRIAL_DAYS = 3;
+const TRIAL_KEY = "srkrTrialStart";
 
 const COMPANY = {
   name: "SRI RADHE KRISHNA ROADLINES",
@@ -30,6 +32,9 @@ const els = {
   searchSlNo: document.querySelector("#searchSlNo"),
   searchBtn: document.querySelector("#searchBtn"),
   newBtn: document.querySelector("#newInvoiceBtn"),
+  historyBtn: document.querySelector("#historyBtn"),
+  closeHistoryBtn: document.querySelector("#closeHistoryBtn"),
+  historyDialog: document.querySelector("#historyDialog"),
   viewBtn: document.querySelector("#viewInvoiceBtn"),
   pdfBtn: document.querySelector("#downloadPdfBtn"),
   dialogPdfBtn: document.querySelector("#dialogPdfBtn"),
@@ -44,6 +49,8 @@ const els = {
 let db;
 let invoices = [];
 let editingSlNo = null;
+let trialExpired = false;
+let trialDaysLeft = TRIAL_DAYS;
 
 document.addEventListener("DOMContentLoaded", init);
 
@@ -54,6 +61,7 @@ async function init() {
   await refreshInvoices();
   await prepareNewInvoice();
   renderPreview(currentFormInvoice());
+  checkTrial();
   registerServiceWorker();
   updateOnlineStatus();
 }
@@ -123,6 +131,11 @@ function bindEvents() {
     document.querySelector(`#${id}`).addEventListener("input", () => renderPreview(currentFormInvoice()));
   });
   els.newBtn.addEventListener("click", prepareNewInvoice);
+  els.historyBtn.addEventListener("click", openHistoryView);
+  els.closeHistoryBtn.addEventListener("click", () => els.historyDialog.close());
+  els.historyDialog.addEventListener("click", (event) => {
+    if (event.target === els.historyDialog) els.historyDialog.close();
+  });
   els.searchBtn.addEventListener("click", searchInvoice);
   els.searchSlNo.addEventListener("keydown", (event) => {
     if (event.key === "Enter") searchInvoice();
@@ -166,6 +179,7 @@ function nextSlNo() {
 
 async function saveCurrentInvoice(event) {
   event.preventDefault();
+  if (blockWhenTrialExpired()) return;
   const invoice = currentFormInvoice();
   if (!invoice.invoiceDate || !invoice.monthFrom || !invoice.monthTo || !invoice.amount) {
     flash("Complete all required fields");
@@ -193,6 +207,7 @@ function currentFormInvoice() {
 }
 
 async function searchInvoice() {
+  if (blockWhenTrialExpired()) return;
   const slNo = Number(els.searchSlNo.value);
   if (!slNo) {
     flash("Enter an Invoice No. to search");
@@ -296,6 +311,7 @@ function renderPreview(invoice) {
 }
 
 function openInvoiceView() {
+  if (blockWhenTrialExpired()) return;
   renderPreview(currentFormInvoice());
   if (typeof els.dialog.showModal === "function") {
     els.dialog.showModal();
@@ -304,7 +320,17 @@ function openInvoiceView() {
   }
 }
 
+function openHistoryView() {
+  if (blockWhenTrialExpired()) return;
+  if (typeof els.historyDialog.showModal === "function") {
+    els.historyDialog.showModal();
+  } else {
+    els.historyDialog.setAttribute("open", "");
+  }
+}
+
 function exportBackup() {
+  if (blockWhenTrialExpired()) return;
   const payload = {
     app: "Sri Radhe Krishna Roadlines Offline Invoice",
     exportedAt: new Date().toISOString(),
@@ -316,6 +342,7 @@ function exportBackup() {
 }
 
 async function importBackup(event) {
+  if (blockWhenTrialExpired()) return;
   const file = event.target.files[0];
   if (!file) return;
   try {
@@ -454,7 +481,11 @@ function flash(message) {
 }
 
 function updateOnlineStatus() {
-  els.status.textContent = navigator.onLine ? "Online, saved locally" : "Offline ready";
+  if (trialExpired) {
+    els.status.textContent = "Trial expired. Data is safe.";
+    return;
+  }
+  els.status.textContent = `Trial: ${trialDaysLeft} day${trialDaysLeft === 1 ? "" : "s"} left`;
 }
 
 function escapeHtml(value) {
@@ -487,12 +518,49 @@ function registerServiceWorker() {
 }
 
 function downloadInvoicePdf(invoice) {
+  if (blockWhenTrialExpired()) return;
   const clean = {
     ...invoice,
     amountWords: amountToIndianWords(invoice.amount || 0)
   };
   const blob = buildInvoicePdf(clean);
   downloadBlob(blob, `invoice-${clean.slNo || "draft"}.pdf`);
+}
+
+function checkTrial() {
+  const now = Date.now();
+  let startedAt = Number(localStorage.getItem(TRIAL_KEY));
+  if (!startedAt) {
+    startedAt = now;
+    localStorage.setItem(TRIAL_KEY, String(startedAt));
+  }
+  const elapsedDays = Math.floor((now - startedAt) / 86400000);
+  const daysLeft = Math.max(0, TRIAL_DAYS - elapsedDays);
+  trialDaysLeft = daysLeft;
+  trialExpired = now - startedAt >= TRIAL_DAYS * 86400000;
+  if (trialExpired) {
+    flash("Trial expired. Data is safe.");
+    setTrialDisabled(true);
+  } else {
+    els.status.textContent = `Trial: ${daysLeft} day${daysLeft === 1 ? "" : "s"} left`;
+  }
+}
+
+function blockWhenTrialExpired() {
+  if (!trialExpired) return false;
+  flash("Trial expired. Contact owner to unlock.");
+  return true;
+}
+
+function setTrialDisabled(disabled) {
+  [
+    els.form.querySelector(".primary"),
+    els.viewBtn,
+    els.pdfBtn,
+    els.historyBtn
+  ].forEach((button) => {
+    if (button) button.disabled = disabled;
+  });
 }
 
 function buildInvoicePdf(invoice) {

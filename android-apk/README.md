@@ -7,7 +7,7 @@ This Android project wraps the offline invoice web app inside a WebView and bund
 Install Android Studio, then open this `android-apk` folder and run:
 
 ```powershell
-gradle assembleDebug
+.\gradlew.bat assembleDebug
 ```
 
 The APK will be created at:

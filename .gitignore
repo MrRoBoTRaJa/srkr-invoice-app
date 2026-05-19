@@ -1,6 +1,8 @@
 source-workbook-copy.xlsm
 srkr-invoice-android-project.zip
 android-apk/.gradle/
+android-apk/.idea/
+android-apk/local.properties
 android-apk/app/build/
 android-apk/build/
 tools/
