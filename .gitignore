@@ -3,5 +3,6 @@ srkr-invoice-android-project.zip
 android-apk/.gradle/
 android-apk/app/build/
 android-apk/build/
+tools/
 *.apk
 *.aab
