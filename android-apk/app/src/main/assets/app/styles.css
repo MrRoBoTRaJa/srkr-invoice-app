@@ -343,11 +343,12 @@ td:last-child {
 
 .invoice-contact {
   position: absolute;
-  left: 42px;
+  right: 42px;
   top: 32px;
   font-size: 13px;
   line-height: 1.25;
   font-weight: 700;
+  text-align: right;
 }
 
 .invoice-logo {

@@ -183,10 +183,7 @@ async function saveCurrentInvoice(event) {
   event.preventDefault();
   if (blockWhenTrialExpired()) return;
   const invoice = currentFormInvoice();
-  if (!invoice.invoiceDate || !invoice.monthFrom || !invoice.monthTo || !invoice.amount) {
-    flash("Complete all required fields");
-    return;
-  }
+  if (!validateInvoice(invoice)) return;
   await putInvoice(invoice);
   editingSlNo = invoice.slNo;
   await refreshInvoices();
@@ -206,6 +203,30 @@ function currentFormInvoice() {
     amountWords: amountToIndianWords(amount),
     updatedAt: new Date().toISOString()
   };
+}
+
+function validateInvoice(invoice) {
+  if (!invoice.invoiceDate) {
+    flash("Invoice Date required");
+    els.invoiceDate.focus();
+    return false;
+  }
+  if (!invoice.monthFrom) {
+    flash("Month From required");
+    els.monthFrom.focus();
+    return false;
+  }
+  if (!invoice.monthTo) {
+    flash("Month To required");
+    els.monthTo.focus();
+    return false;
+  }
+  if (!invoice.amount || invoice.amount <= 0) {
+    flash("Amount required");
+    els.amount.focus();
+    return false;
+  }
+  return true;
 }
 
 async function searchInvoice() {
@@ -501,6 +522,17 @@ function dateStamp() {
 }
 
 function downloadBlob(blob, filename) {
+  if (window.AndroidFile && typeof window.AndroidFile.saveFile === "function") {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = String(reader.result).split(",")[1] || "";
+      window.AndroidFile.saveFile(filename, blob.type || "application/octet-stream", base64);
+      flash(`Saved ${filename}`);
+    };
+    reader.onerror = () => flash("Download failed");
+    reader.readAsDataURL(blob);
+    return;
+  }
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -521,6 +553,7 @@ function registerServiceWorker() {
 
 function downloadInvoicePdf(invoice) {
   if (blockWhenTrialExpired()) return;
+  if (!validateInvoice(invoice)) return;
   const clean = {
     ...invoice,
     amountWords: amountToIndianWords(invoice.amount || 0)
@@ -606,8 +639,8 @@ function buildInvoicePdf(invoice) {
   };
 
   content.push(black);
-  text("Mob: 9939269234,", 48, 804, 10, { bold: true });
-  text("6207178839", 48, 790, 10, { bold: true });
+  text("Mob: 9939269234,", 548, 804, 10, { bold: true, align: "right" });
+  text("6207178839", 548, 790, 10, { bold: true, align: "right" });
   text(COMPANY.name, width / 2, 768, 18, { bold: true, align: "center" });
   text(COMPANY.address, width / 2, 750, 9, { align: "center" });
   text(COMPANY.email, width / 2, 736, 9, { align: "center" });
