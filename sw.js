@@ -1,9 +1,9 @@
-const CACHE_NAME = "srkr-invoice-v17";
+const CACHE_NAME = "srkr-invoice-v18";
 const ASSETS = [
   "./",
   "./index.html",
-  "./styles.css?v=17",
-  "./app.js?v=16",
+  "./styles.css?v=18",
+  "./app.js?v=17",
   "./assets/logo-pdf.jpg",
   "./manifest.json",
   "./assets/image1.png",

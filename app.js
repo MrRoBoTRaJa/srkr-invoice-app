@@ -335,7 +335,7 @@ function renderPreview(invoice) {
   const node = els.template.content.cloneNode(true);
   const fields = {
     slNo: invoice.slNo || "",
-    displaySl: String(invoice.slNo || "").padStart(2, "0"),
+    displaySl: "01",
     invoiceDate: formatDateShort(invoice.invoiceDate),
     description: invoice.description || "",
     monthBill: formatMonthBill(invoice.monthFrom, invoice.monthTo),
@@ -724,7 +724,7 @@ function buildInvoicePdf(invoice, logoHex = "") {
   text(`INVOICE DATE ${formatDateShort(invoice.invoiceDate)}`, tableX + 374, tableTop - 52, 12, { bold: true, align: "center" });
 
   const headerY = tableTop - rowH[0] - 24;
-  text("INVOICE", tableX + 29, headerY + 7, 8, { align: "center" });
+  text("SERIAL", tableX + 29, headerY + 7, 8, { align: "center" });
   text("NO.", tableX + 29, headerY - 7, 8, { align: "center" });
   text("DESCRIPTION", tableX + col[0] + 94, headerY, 10, { align: "center" });
   text("MONTH OF", tableX + col[0] + col[1] + 64, headerY + 8, 10, { align: "center" });
@@ -732,7 +732,7 @@ function buildInvoicePdf(invoice, logoHex = "") {
   text("AMOUNT", tableX + tableW - 66, headerY, 10, { align: "center" });
 
   const dataTop = tableTop - rowH[0] - rowH[1];
-  text(String(invoice.slNo || "").padStart(2, "0"), tableX + 29, dataTop - 58, 11, { align: "center" });
+  text("01", tableX + 29, dataTop - 58, 11, { align: "center" });
   text(invoice.description || "", tableX + col[0] + 12, dataTop - 58, 11);
   wrap(formatMonthBill(invoice.monthFrom, invoice.monthTo), 15).slice(0, 5).forEach((lineText, index) => {
     text(lineText, tableX + col[0] + col[1] + 64, dataTop - 24 - index * 15, 11, { align: "center" });
